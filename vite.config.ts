@@ -2,6 +2,16 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
+  worker: {
+    format: "es",
+    rollupOptions: {
+      output: {
+        entryFileNames: "background/[name]-[hash].js",
+        chunkFileNames: "background/[name]-[hash].js",
+        assetFileNames: "background/[name]-[hash][extname]",
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -38,6 +48,17 @@ export default defineConfig({
       },
       workbox: {
         clientsClaim: true,
+        globIgnores: ["background/**"],
+        runtimeCaching: [
+          {
+            urlPattern: /\/background\/.*\.js$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "personal-os-background-code-v1",
+              expiration: { maxEntries: 30 },
+            },
+          },
+        ],
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//],
@@ -45,6 +66,12 @@ export default defineConfig({
       },
     }),
   ],
-  server: { proxy: { "/api": "http://127.0.0.1:8003" } },
+  server: {
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
+    proxy: { "/api": "http://127.0.0.1:8003" },
+  },
   build: { chunkSizeWarningLimit: 1100 },
 });

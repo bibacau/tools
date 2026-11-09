@@ -31,7 +31,11 @@ function App() {
     [setup, setSetup] = useState(false),
     [password, setPassword] = useState(""),
     [error, setError] = useState(""),
-    [page, setPage] = useState(location.pathname.slice(1) || "dashboard"),
+    [page, setPage] = useState(
+      ["ip", "currency"].includes(location.pathname.slice(1))
+        ? "all"
+        : location.pathname.slice(1) || "dashboard",
+    ),
     [query, setQuery] = useState(""),
     [palette, setPalette] = useState(false),
     [mobile, setMobile] = useState(false),
@@ -111,7 +115,7 @@ function App() {
         : prefs.theme;
     document.documentElement.style.setProperty(
       "--accent",
-      prefs.accent || "#9c8bff",
+      prefs.theme === "cozy-forest" ? "#a65d36" : prefs.accent || "#9c8bff",
     );
     document.documentElement.dataset.motion =
       prefs.motion === false ? "off" : "on";
@@ -120,7 +124,9 @@ function App() {
     void store.put("preferences", { ...prefs, ...v });
   const favorite = (id: string) =>
     savePrefs({
-      favorites: prefs.favorites.includes(id)
+      favorites: prefs.favorites
+        .filter((id: string) => tools.some((t) => t.id === id))
+        .includes(id)
         ? prefs.favorites.filter((x: string) => x !== id)
         : [...prefs.favorites, id],
     });
@@ -169,14 +175,15 @@ function App() {
           <h2>{setup ? "Make yourself at home" : "Welcome back"}</h2>
           <p>
             {setup
-              ? "Create your private account with a password of at least 12 characters."
+              ? "Create your private account with a password of at least 8 letters or numbers."
               : "Enter your password to open your workspace."}
           </p>
           <label>
             Password
             <input
               type="password"
-              minLength={12}
+              minLength={setup ? 8 : 1}
+              pattern={setup ? "[A-Za-z0-9]{8,200}" : undefined}
               maxLength={200}
               required
               autoComplete={setup ? "new-password" : "current-password"}
@@ -220,14 +227,25 @@ function App() {
         <article className="tool-card" key={t.id}>
           <button
             className={
-              "favorite " + (prefs.favorites.includes(t.id) ? "selected" : "")
+              "favorite " +
+              (prefs.favorites
+                .filter((id: string) => tools.some((t) => t.id === id))
+                .includes(t.id)
+                ? "selected"
+                : "")
             }
             aria-label={"Favorite " + t.name}
             onClick={() => favorite(t.id)}
           >
             <Star
               size={15}
-              fill={prefs.favorites.includes(t.id) ? "currentColor" : "none"}
+              fill={
+                prefs.favorites
+                  .filter((id: string) => tools.some((t) => t.id === id))
+                  .includes(t.id)
+                  ? "currentColor"
+                  : "none"
+              }
             />
           </button>
           <button className="card-link" onClick={() => go(t.id)}>
@@ -251,20 +269,32 @@ function App() {
         <div className="section-heading">
           <h2>
             <Star size={17} /> Your favorites{" "}
-            <span>{prefs.favorites.length}</span>
+            <span>
+              {
+                prefs.favorites.filter((id: string) =>
+                  tools.some((t) => t.id === id),
+                ).length
+              }
+            </span>
           </h2>
           <button className="text-button" onClick={() => go("favorites")}>
             Manage favorites <ChevronRight size={15} />
           </button>
         </div>
-        {cards(tools.filter((t) => prefs.favorites.includes(t.id)))}
+        {cards(
+          tools.filter((t) =>
+            prefs.favorites
+              .filter((id: string) => tools.some((t) => t.id === id))
+              .includes(t.id),
+          ),
+        )}
       </section>
     ),
     tools: (
       <section>
         <div className="section-heading">
           <h2>
-            Your everyday toolkit <span>11 tools</span>
+            Your everyday toolkit <span>{tools.length} tools</span>
           </h2>
           <span className="subtle">Little tools. Endless possibilities.</span>
         </div>
@@ -394,7 +424,7 @@ function App() {
             >
               <n.icon size={18} />
               <span>{n.name}</span>
-              {n.id === "all" && <small>11</small>}
+              {n.id === "all" && <small>{tools.length}</small>}
             </button>
           ))}
         </nav>
@@ -403,7 +433,11 @@ function App() {
         </div>
         <nav className="pinned">
           {tools
-            .filter((t) => prefs.favorites.includes(t.id))
+            .filter((t) =>
+              prefs.favorites
+                .filter((id: string) => tools.some((t) => t.id === id))
+                .includes(t.id),
+            )
             .map((t) => (
               <button
                 key={t.id}
@@ -548,7 +582,7 @@ function App() {
                     <Grid2X2 size={18} />
                   </span>
                   <span>
-                    <b>11</b>
+                    <b>{tools.length}</b>
                     <small>Handy tools</small>
                   </span>
                 </div>
@@ -557,7 +591,12 @@ function App() {
                     <Star size={18} />
                   </span>
                   <span>
-                    <b>{prefs.favorites.length.toString().padStart(2, "0")}</b>
+                    <b>
+                      {prefs.favorites
+                        .filter((id: string) => tools.some((t) => t.id === id))
+                        .length.toString()
+                        .padStart(2, "0")}
+                    </b>
                     <small>Your favorites</small>
                   </span>
                 </div>
@@ -585,7 +624,10 @@ function App() {
                   <React.Fragment key={w}>{widgets[w]}</React.Fragment>
                 ),
               )}
-              {store.list("recent").length > 0 && (
+              {store
+                .list("recent")
+                .filter((r) => tools.some((t) => t.id === r.data.tool)).length >
+                0 && (
                 <section>
                   <div className="section-heading">
                     <h2>Recently opened</h2>
@@ -593,6 +635,7 @@ function App() {
                   <div className="chips">
                     {store
                       .list("recent")
+                      .filter((r) => tools.some((t) => t.id === r.data.tool))
                       .sort((a, b) => b.data.updated - a.data.updated)
                       .slice(0, 5)
                       .map((r) => (
@@ -640,7 +683,11 @@ function App() {
               </div>
               {cards(
                 filtered.filter(
-                  (t) => page !== "favorites" || prefs.favorites.includes(t.id),
+                  (t) =>
+                    page !== "favorites" ||
+                    prefs.favorites
+                      .filter((id: string) => tools.some((t) => t.id === id))
+                      .includes(t.id),
                 ),
               )}
             </>
@@ -663,7 +710,9 @@ function App() {
                 >
                   <Star
                     fill={
-                      prefs.favorites.includes(current.id)
+                      prefs.favorites
+                        .filter((id: string) => tools.some((t) => t.id === id))
+                        .includes(current.id)
                         ? "currentColor"
                         : "none"
                     }
@@ -713,8 +762,10 @@ function App() {
                       value={prefs.theme}
                       onChange={(e) => savePrefs({ theme: e.target.value })}
                     >
-                      {["dark", "light", "system"].map((x) => (
-                        <option key={x}>{x}</option>
+                      {["dark", "light", "system", "cozy-forest"].map((x) => (
+                        <option key={x} value={x}>
+                          {x === "cozy-forest" ? "Cozy forest" : x}
+                        </option>
                       ))}
                     </select>
                   </label>
@@ -760,6 +811,55 @@ function App() {
                   )}
                 </section>
                 <section className="panel">
+                  <h2>Account password</h2>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const fields = new FormData(form);
+                      try {
+                        const response = await fetch("/api/password", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            currentPassword: fields.get("currentPassword"),
+                            newPassword: fields.get("newPassword"),
+                          }),
+                        });
+                        const result = await response.json();
+                        if (!response.ok) throw Error(result.error);
+                        form.reset();
+                        alert("Password updated.");
+                      } catch (error) {
+                        alert((error as Error).message);
+                      }
+                    }}
+                  >
+                    <label>
+                      Current password
+                      <input
+                        name="currentPassword"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        maxLength={200}
+                      />
+                    </label>
+                    <label>
+                      New password · at least 8 letters or numbers
+                      <input
+                        name="newPassword"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        minLength={8}
+                        maxLength={200}
+                        pattern="[A-Za-z0-9]{8,200}"
+                      />
+                    </label>
+                    <button>Update password</button>
+                  </form>
+                  <hr />
                   <h2>Privacy & offline storage</h2>
                   <label className="check">
                     <input
@@ -772,9 +872,9 @@ function App() {
                     Allow optional internet features
                   </label>
                   <p className="subtle">
-                    Off by default. When enabled, currency and IP tools can
-                    contact their displayed providers only when you request a
-                    refresh. Audio never goes to a third party.
+                    Off by default. Enable this to download the
+                    background-removal model when you request processing. Images
+                    remain on your device. Audio never goes to a third party.
                   </p>
                   <p>{store.syncState}</p>
                   <small>
@@ -870,7 +970,11 @@ function App() {
                       if (confirm("Delete all test and activity history?")) {
                         [
                           ...store.list("record"),
-                          ...store.list("recent"),
+                          ...store
+                            .list("recent")
+                            .filter((r) =>
+                              tools.some((t) => t.id === r.data.tool),
+                            ),
                         ].forEach((r) => void store.remove(r.id));
                       }
                     }}
@@ -884,7 +988,11 @@ function App() {
                     <label className="check" key={t.id}>
                       <input
                         type="checkbox"
-                        checked={prefs.favorites.includes(t.id)}
+                        checked={prefs.favorites
+                          .filter((id: string) =>
+                            tools.some((t) => t.id === id),
+                          )
+                          .includes(t.id)}
                         onChange={() => favorite(t.id)}
                       />
                       {t.name}

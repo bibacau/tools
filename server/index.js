@@ -15,18 +15,14 @@ const db = new PrismaClient({
 const app = express();
 app.use(
   helmet({
+    crossOriginEmbedderPolicy: true,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", "'wasm-unsafe-eval'", "blob:"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: [
-          "'self'",
-          "https://api.frankfurter.dev",
-          "https://ipapi.co",
-          "https://api64.ipify.org",
-        ],
+        connectSrc: ["'self'", "https://staticimgly.com", "blob:"],
         workerSrc: ["'self'", "blob:"],
       },
     },
@@ -64,14 +60,18 @@ app.post("/api/auth", authLimit, async (req, res) => {
   const { password } = req.body;
   if (
     typeof password !== "string" ||
-    password.length < 12 ||
+    password.length < 1 ||
     password.length > 200
   )
     return res
       .status(400)
-      .json({ error: "Use a password of 12–200 characters." });
+      .json({ error: "Enter a password of up to 200 characters." });
   let owner = await db.account.findUnique({ where: { id: "owner" } });
   if (!owner) {
+    if (!/^[A-Za-z0-9]{8,200}$/.test(password))
+      return res.status(400).json({
+        error: "Use at least 8 letters or numbers (A–Z, a–z, 0–9 only).",
+      });
     try {
       owner = await db.account.create({
         data: { hash: await bcrypt.hash(password, 12) },
@@ -108,6 +108,26 @@ app.use("/api", async (req, res, next) => {
     return res.status(401).json({ error: "Sign in to synchronize" });
   next();
 });
+app.post("/api/password", authLimit, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (
+    typeof currentPassword !== "string" ||
+    typeof newPassword !== "string" ||
+    !/^[A-Za-z0-9]{8,200}$/.test(newPassword)
+  )
+    return res.status(400).json({
+      error: "Use at least 8 letters or numbers (A–Z, a–z, 0–9 only).",
+    });
+  const owner = await db.account.findUnique({ where: { id: "owner" } });
+  if (!owner || !(await bcrypt.compare(currentPassword, owner.hash)))
+    return res.status(401).json({ error: "Incorrect current password" });
+  await db.account.update({
+    where: { id: "owner" },
+    data: { hash: await bcrypt.hash(newPassword, 12) },
+  });
+  await db.session.deleteMany({ where: { id: { not: req.cookies.session } } });
+  res.json({ ok: true });
+});
 app.get("/api/records", async (req, res) =>
   res.json(
     (await db.record.findMany()).map((r) => ({
@@ -131,6 +151,8 @@ app.put("/api/records/:id", async (req, res) => {
     return res.status(400).json({ error: "Invalid record" });
   const result = await db.$transaction(async (tx) => {
     const r = await tx.record.findUnique({ where: { id: req.params.id } });
+    if (r && r.payload === JSON.stringify(data))
+      return { id: r.id, rev: r.rev };
     if ((r?.rev || 0) !== baseRev)
       return {
         conflict: r
@@ -154,25 +176,6 @@ app.put("/api/records/:id", async (req, res) => {
     return { id: row.id, rev: row.rev };
   });
   res.status("conflict" in result ? 409 : 200).json(result);
-});
-app.get("/api/network", (req, res) =>
-  res.json({
-    serverReachable: true,
-    clientAddress: req.socket.remoteAddress,
-    serverTime: new Date().toISOString(),
-    note: "Address observed by this server; a reverse proxy can change it.",
-  }),
-);
-app.get("/api/speech", async (req, res) => {
-  if (!process.env.SPEECH_URL) return res.json({ available: false });
-  try {
-    const r = await fetch(process.env.SPEECH_URL + "/health", {
-      signal: AbortSignal.timeout(3000),
-    });
-    res.json({ available: r.ok });
-  } catch {
-    res.json({ available: false });
-  }
 });
 app.post(
   "/api/speech",

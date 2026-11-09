@@ -1723,3 +1723,287 @@ footer button {
 .sidebar-bottom {
   flex-shrink: 0;
 }
+/* Cozy forest: original local woodland artwork, parchment and moss palette. */
+[data-theme="cozy-forest"] {
+  --bg: #f4ecd7;
+  --panel: #faf4e4;
+  --border: #d2c7a3;
+  --muted: #6c7053;
+  --text: #263d2b;
+  --sidebar: #283d28;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+}
+[data-theme="cozy-forest"] body {
+  background-image: radial-gradient(#89764512 0.7px, transparent 0.7px);
+  background-size: 5px 7px;
+}
+[data-theme="cozy-forest"] .app aside {
+  background: linear-gradient(135deg, #354a2e, #213621);
+  color: #faf1d7;
+  border-color: #8e9a60;
+}
+[data-theme="cozy-forest"] .brand {
+  color: #fff3d5;
+}
+[data-theme="cozy-forest"] .brand b > span {
+  color: #dcc68c;
+}
+[data-theme="cozy-forest"] .brand small,
+[data-theme="cozy-forest"] .nav-label,
+[data-theme="cozy-forest"] .profile small {
+  color: #d2d5ac;
+}
+[data-theme="cozy-forest"] nav button,
+[data-theme="cozy-forest"] nav button svg {
+  color: #ede6c8;
+}
+[data-theme="cozy-forest"] nav button.active {
+  background: #b56d41;
+  color: #fff6da;
+}
+[data-theme="cozy-forest"] nav button.active svg {
+  color: #fff6da;
+}
+[data-theme="cozy-forest"] .welcome {
+  min-height: 210px;
+  background: url("/woodland.svg") center bottom/cover no-repeat;
+  padding: 25px 155px 35px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+[data-theme="cozy-forest"] .welcome > div:first-child {
+  width: 100%;
+}
+[data-theme="cozy-forest"] .welcome h1 {
+  font-size: 35px;
+  color: #2c452a;
+}
+[data-theme="cozy-forest"] .welcome .date-box {
+  display: none;
+}
+[data-theme="cozy-forest"] .welcome p {
+  color: #616345;
+}
+[data-theme="cozy-forest"] .tool-card {
+  background: linear-gradient(110deg, #ebe8cce0, #f7f1db);
+  box-shadow: 0 2px 5px #67512f08;
+}
+[data-theme="cozy-forest"] .tool-card h3,
+[data-theme="cozy-forest"] .section-heading h2 {
+  color: #263d2b;
+}
+[data-theme="cozy-forest"] .tool-card p,
+[data-theme="cozy-forest"] .card-bottom,
+[data-theme="cozy-forest"] .card-bottom svg {
+  color: #647052;
+}
+[data-theme="cozy-forest"] .tool-icon {
+  background: #7b8d50;
+  color: #fff4d8;
+}
+[data-theme="cozy-forest"] .rose,
+[data-theme="cozy-forest"] .pink {
+  background: #ba7955;
+  color: #fff2d5;
+}
+[data-theme="cozy-forest"] .hero-search,
+[data-theme="cozy-forest"] .overview {
+  background: #eae6c9;
+}
+[data-theme="cozy-forest"] .hero-search input {
+  color: #35482c;
+}
+[data-theme="cozy-forest"]
+  button:not(.primary):not(.card-link):not(.test-area):hover {
+  background: #7c8c4e20;
+}
+[data-theme="cozy-forest"]
+  button:not(.primary):not(.card-link):not(.test-area) {
+  background: transparent;
+}
+[data-theme="cozy-forest"] .private-box {
+  border-color: #a6ab76;
+  background: #c9d49812;
+}
+[data-theme="cozy-forest"] .private-box p {
+  color: #dedcc4;
+}
+[data-theme="cozy-forest"] .eyebrow {
+  color: #6e794e;
+}
+[data-theme="cozy-forest"] .filters button.active {
+  background: #a9663b;
+  color: #fff2d8;
+}
+[data-theme="cozy-forest"] .favorite.selected {
+  color: #b97432;
+}
+[data-theme="cozy-forest"] .test-area {
+  background: #e9e4c9;
+  color: #34492e;
+}
+[data-theme="cozy-forest"] .reaction.go {
+  background: #5e8c54;
+}
+[data-theme="cozy-forest"] .primary {
+  background: #aa633c;
+  color: #fff4df;
+}
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 30px 18px;
+  text-align: center;
+  align-items: center;
+  cursor: pointer;
+  background: var(--bg);
+}
+.drop-zone svg {
+  color: var(--accent);
+}
+.drop-zone span {
+  font-size: 11px;
+}
+.drop-zone input {
+  max-width: 340px;
+  font-size: 12px;
+}
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.image-result,
+.url-result {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 18px;
+  min-width: 0;
+}
+.image-result h3 {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.image-comparison {
+  display: flex;
+  gap: 12px;
+}
+.image-comparison figure {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+.checkerboard {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #d8d8d8 25%, transparent 25%),
+    linear-gradient(-45deg, #d8d8d8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d8d8d8 75%),
+    linear-gradient(-45deg, transparent 75%, #d8d8d8 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.checkerboard img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.image-comparison figcaption {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 9px 0;
+}
+.url-result h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.url-result code,
+.url-result .check span {
+  overflow-wrap: anywhere;
+}
+.url-result .check {
+  align-items: flex-start;
+}
+.url-result .check input {
+  flex-shrink: 0;
+}
+.warning {
+  font-size: 12px;
+  color: #bd8739;
+}
+@media (max-width: 900px) {
+  [data-theme="cozy-forest"] .welcome {
+    padding: 20px 50px 70px;
+    background-size: auto 200px;
+  }
+  [data-theme="cozy-forest"] .welcome h1 {
+    font-size: 28px;
+  }
+  .image-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 620px) {
+  [data-theme="cozy-forest"] .welcome {
+    padding: 20px 10px 95px;
+    background-size: 100% auto;
+  }
+  [data-theme="cozy-forest"] .welcome h1 {
+    font-size: 27px;
+  }
+  [data-theme="cozy-forest"] .welcome p {
+    max-width: none;
+  }
+  .image-comparison {
+    flex-direction: column;
+  }
+  .drop-zone {
+    padding: 22px 12px;
+  }
+  .image-result {
+    padding: 14px;
+  }
+}
+[data-theme="cozy-forest"] .filters button {
+  color: #52613c;
+}
+[data-theme="cozy-forest"]
+  .filters
+  button.active:not(.primary):not(.card-link):not(.test-area) {
+  background: #a9663b;
+  color: #fff2d8;
+}
+[data-theme="cozy-forest"] .text-button,
+[data-theme="cozy-forest"] .breadcrumb,
+[data-theme="cozy-forest"] .breadcrumb b,
+[data-theme="cozy-forest"] .search-trigger {
+  color: #586345;
+}
+[data-theme="cozy-forest"] .brand-mark {
+  background: #c89b58;
+  color: #fff4d9;
+}
+[data-theme="cozy-forest"] .hero-search kbd {
+  background: #dcd8b7;
+  color: #435535;
+  border-color: #b7ba88;
+}
+[data-theme="cozy-forest"] .overview-icon {
+  background: #7e8d4c;
+  color: #fff4d9;
+}

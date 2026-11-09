@@ -15,15 +15,10 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import * as store from "./store";
-import {
-  download,
-  copy,
-  weightedIndex,
-  typingStats,
-  cps,
-  currency,
-} from "./utils";
+import { download, copy, weightedIndex, typingStats, cps } from "./utils";
 import { units, convert, volumeMass, densities } from "./units";
+const ImageTools = lazy(() => import("./image-tools"));
+const URLCleaner = lazy(() => import("./url-cleaner"));
 const Graph = lazy(() => import("./graph"));
 const record = (name: string, value: string, extra: any = {}) =>
   store.create("record", { name, value, ...extra });
@@ -685,156 +680,6 @@ function Units() {
               setN(r.data.n);
               setDensity(r.data.density);
               setMaterial(r.data.material);
-            }}
-          >
-            {r.data.from} → {r.data.to}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-function Currency({ prefs }: { prefs: any }) {
-  const [amount, setAmount] = useState("100"),
-    [from, setFrom] = useState("USD"),
-    [to, setTo] = useState("MYR"),
-    [manual, setManual] = useState(""),
-    [error, setError] = useState(""),
-    [loading, setLoading] = useState(false),
-    [provider, setProvider] = useState("https://api.frankfurter.dev/v1/latest");
-  const cache = store.get("rates-" + from);
-  const rate = manual ? +manual : cache?.rates?.[to];
-  const currencies = [
-    ...new Set([
-      "MYR",
-      "USD",
-      "SGD",
-      "EUR",
-      "GBP",
-      "JPY",
-      "CNY",
-      ...Object.keys(cache?.rates || {}),
-    ]),
-  ].sort();
-  async function refresh() {
-    if (!prefs.external)
-      return setError("Enable optional internet features in Settings first.");
-    if (cache && Date.now() - cache.fetched < 3600000)
-      return setError(
-        "Rates refreshed within the last hour. Using the cached response.",
-      );
-    setLoading(true);
-    setError("");
-    try {
-      const url = new URL(provider);
-      if (url.origin !== "https://api.frankfurter.dev")
-        throw Error(
-          "Only the Frankfurter provider is supported by this build’s privacy policy.",
-        );
-      url.searchParams.set("base", from);
-      const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) throw Error("Provider unavailable");
-      const v = await r.json();
-      if (!v.rates || !v.date) throw Error("Invalid rate response");
-      await store.put("rates-" + from, {
-        type: "rates",
-        rates: { ...v.rates, [from]: 1 },
-        date: v.date,
-        fetched: Date.now(),
-        provider: "Frankfurter / institutional reference rates",
-      });
-    } catch (e) {
-      setError((e as Error).message + " — cached and manual rates still work.");
-    } finally {
-      setLoading(false);
-    }
-  }
-  return (
-    <div className="panel converter">
-      <h2>A world of currencies. One clear answer.</h2>
-      <div className="conversion-row">
-        <label>
-          Amount
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <select value={from} onChange={(e) => setFrom(e.target.value)}>
-            {currencies.map((x) => (
-              <option key={x}>{x}</option>
-            ))}
-          </select>
-        </label>
-        <button
-          aria-label="Swap currencies"
-          onClick={() => {
-            setFrom(to);
-            setTo(from);
-            if (manual) setManual(String(1 / +manual));
-          }}
-        >
-          <ArrowRightLeft />
-        </button>
-        <label>
-          Converted amount
-          <output>
-            {rate
-              ? currency(+amount, rate).toLocaleString(undefined, {
-                  maximumFractionDigits: 4,
-                })
-              : "—"}
-          </output>
-          <select value={to} onChange={(e) => setTo(e.target.value)}>
-            {currencies.map((x) => (
-              <option key={x}>{x}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <label>
-        Manual rate · 1 {from} = ? {to}
-        <input
-          type="number"
-          min="0"
-          step="any"
-          value={manual}
-          placeholder="Enter a rate to use completely offline"
-          onChange={(e) => setManual(e.target.value)}
-        />
-      </label>
-      <p className="subtle">
-        {manual
-          ? "Using your manual rate."
-          : cache
-            ? `Cached rate · ${cache.provider} · reference date ${cache.date} · fetched ${new Date(cache.fetched).toLocaleString()}. May be outdated; not live.`
-            : "No cached rates yet. Enter a manual rate or refresh online."}
-      </p>
-      <label>
-        Rate provider
-        <input value={provider} onChange={(e) => setProvider(e.target.value)} />
-      </label>
-      <div className="actions">
-        <button disabled={loading} onClick={refresh}>
-          {loading ? "Updating…" : "Refresh rates"}
-        </button>
-        <button onClick={() => store.create("pair", { from, to, manual })}>
-          Save pair
-        </button>
-      </div>
-      {error && (
-        <p role="alert" className="error">
-          {error}
-        </p>
-      )}
-      <div className="chips">
-        {store.list("pair").map((r) => (
-          <button
-            key={r.id}
-            onClick={() => {
-              setFrom(r.data.from);
-              setTo(r.data.to);
-              setManual(r.data.manual);
             }}
           >
             {r.data.from} → {r.data.to}
@@ -1518,116 +1363,6 @@ function WPM() {
     </section>
   );
 }
-function IP({ prefs }: { prefs: any }) {
-  const [local, setLocal] = useState<any>(null),
-    [error, setError] = useState(""),
-    [loading, setLoading] = useState(false);
-  const cached = store.get("ip-cache");
-  const conn = (navigator as any).connection;
-  async function refresh() {
-    setLoading(true);
-    setError("");
-    try {
-      const r = await fetch("/api/network");
-      if (!r.ok) throw Error();
-      setLocal(await r.json());
-    } catch {
-      setLocal({ note: "Local server is unreachable." });
-    }
-    if (prefs.external) {
-      try {
-        const r = await fetch("https://ipapi.co/json/", {
-          signal: AbortSignal.timeout(8000),
-        });
-        if (!r.ok) throw Error("Public IP lookup failed");
-        const v = await r.json();
-        if (v.error) throw Error(v.reason || "Provider error");
-        let ipv6 = "Unavailable";
-        try {
-          const ip = await (
-            await fetch("https://api64.ipify.org?format=json", {
-              signal: AbortSignal.timeout(5000),
-            })
-          ).json();
-          if (ip.ip.includes(":")) ipv6 = ip.ip;
-        } catch {}
-        await store.put("ip-cache", {
-          type: "ip",
-          ...v,
-          ipv6,
-          fetched: Date.now(),
-          provider: "ipapi.co / ipify",
-        });
-      } catch (e) {
-        setError((e as Error).message);
-      }
-    }
-    setLoading(false);
-  }
-  return (
-    <div className="settings-grid">
-      <section className="panel">
-        <h2>Your connection, at a glance.</h2>
-        <dl>
-          <dt>Browser network hint</dt>
-          <dd>{navigator.onLine ? "Online" : "Offline"}</dd>
-          <dt>Connection type</dt>
-          <dd>{conn?.effectiveType || "Unavailable in this browser"}</dd>
-          <dt>Estimated downlink</dt>
-          <dd>{conn?.downlink ? conn.downlink + " Mbps" : "Unavailable"}</dd>
-          <dt>LAN / MAC / Router</dt>
-          <dd>Restricted by browser privacy protections</dd>
-          <dt>Local server</dt>
-          <dd>{local ? JSON.stringify(local) : "Not checked"}</dd>
-        </dl>
-        <button disabled={loading} onClick={refresh}>
-          {loading ? "Checking…" : "Refresh information"}
-        </button>
-        <p className="subtle">
-          “Online” does not prove internet or local-server access. No invasive
-          network discovery is performed.
-        </p>
-        {error && <p className="error">{error}</p>}
-      </section>
-      <section className="panel">
-        <h2>Public IP · cached information</h2>
-        {cached ? (
-          <>
-            <p className="subtle">
-              Cached {new Date(cached.fetched).toLocaleString()} ·{" "}
-              {cached.provider}. May be outdated.
-            </p>
-            <dl>
-              {[
-                ["IP", cached.ip],
-                ["IPv6", cached.ipv6],
-                [
-                  "Approximate location",
-                  [cached.city, cached.region, cached.country_name]
-                    .filter(Boolean)
-                    .join(", "),
-                ],
-                ["ISP", cached.org],
-                ["ASN", cached.asn],
-                ["Time zone", cached.timezone],
-              ].map(([l, v]) => (
-                <React.Fragment key={l}>
-                  <dt>{l}</dt>
-                  <dd>{v || "Unavailable"}</dd>
-                </React.Fragment>
-              ))}
-            </dl>
-          </>
-        ) : (
-          <p className="subtle">
-            No cached lookup. Optional internet features must be enabled to
-            request public information. Geolocation is approximate.
-          </p>
-        )}
-      </section>
-    </div>
-  );
-}
 function Speech() {
   const [text, setText] = useState(""),
     [status, setStatus] = useState("Ready"),
@@ -1808,8 +1543,23 @@ function Speech() {
     </div>
   );
 }
-export default function Tools({ id, prefs }: { id: string; prefs: any }) {
+export default function Tools({ id }: { id: string; prefs: any }) {
   switch (id) {
+    case "image-converter":
+    case "background-remover":
+      return (
+        <Suspense
+          fallback={<div className="panel">Opening image workspace…</div>}
+        >
+          <ImageTools key={id} mode={id} />
+        </Suspense>
+      );
+    case "url-cleaner":
+      return (
+        <Suspense fallback={<div className="panel">Opening URL cleaner…</div>}>
+          <URLCleaner />
+        </Suspense>
+      );
     case "notes":
       return <Notes />;
     case "qr":
@@ -1822,8 +1572,6 @@ export default function Tools({ id, prefs }: { id: string; prefs: any }) {
           <Graph />
         </Suspense>
       );
-    case "currency":
-      return <Currency prefs={prefs} />;
     case "wheel":
       return <Wheels />;
     case "reaction":
@@ -1832,8 +1580,6 @@ export default function Tools({ id, prefs }: { id: string; prefs: any }) {
       return <CPS />;
     case "wpm":
       return <WPM />;
-    case "ip":
-      return <IP prefs={prefs} />;
     case "speech":
       return <Speech />;
     default:

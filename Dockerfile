@@ -6,18 +6,22 @@ COPY --chmod=644 package*.json ./
 COPY --chown=node:node prisma ./prisma
 COPY --chmod=644 prisma.config.ts ./
 RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; npm ci --no-audit --no-fund
-COPY . .
+COPY src ./src
+COPY public ./public
+COPY index.html tsconfig.json vite.config.ts ./
 RUN npm run build && npm prune --omit=dev --ignore-scripts
 FROM node:22-bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
+COPY --chown=node:node --from=build /app/dist ./dist
 COPY --chmod=644 package*.json ./
 COPY --chmod=644 prisma.config.ts ./
 COPY --chown=node:node prisma ./prisma
 COPY --chown=node:node server ./server
 COPY --chmod=644 docker-entrypoint.sh ./
+COPY --chmod=644 LICENSE ./LICENSE
+COPY --chown=node:node licenses ./licenses
 RUN mkdir -p /app/data && chown -R node:node /app/data
 ENV NODE_ENV=production PORT=8002 DATABASE_URL=file:/app/data/personal-os.db
 USER node

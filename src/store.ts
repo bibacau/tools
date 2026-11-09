@@ -102,8 +102,8 @@ export async function sync() {
               : {}),
           },
         };
-        await (await db).put("records", copy);
         items.push(copy);
+        await (await db).put("records", copy);
         const current = items.find((x) => x.id === local.id);
         if (current?.version === local.version) {
           const replacement = {
@@ -111,8 +111,8 @@ export async function sync() {
             dirty: false,
             version: crypto.randomUUID(),
           };
-          await (await db).put("records", replacement);
           items = items.map((x) => (x.id === local.id ? replacement : x));
+          await (await db).put("records", replacement);
         }
         syncState = "Conflict preserved as a separate copy";
       } else if (response.ok) {
@@ -124,8 +124,8 @@ export async function sync() {
             rev,
             dirty: current.version !== local.version,
           };
-          await (await db).put("records", row);
           items = items.map((x) => (x.id === row.id ? row : x));
+          await (await db).put("records", row);
         }
       } else throw Error("Sync failed");
     }
@@ -137,8 +137,8 @@ export async function sync() {
           dirty: false,
           version: crypto.randomUUID(),
         };
-        await (await db).put("records", row);
         items = [...items.filter((x) => x.id !== row.id), row];
+        await (await db).put("records", row);
       }
     }
     lastSync = new Date().toISOString();

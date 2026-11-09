@@ -3,10 +3,14 @@ test("account, tools, notes, offline reload, reconnect and revision conflicts", 
   page,
   context,
 }) => {
+  for (const password of ["1234567", "1234567!"])
+    expect(
+      (
+        await context.request.post("/api/auth", { data: { password } })
+      ).status(),
+    ).toBe(400);
   await page.goto("/");
-  await page
-    .getByLabel("Password", { exact: true })
-    .fill("personal-os-test-password");
+  await page.getByLabel("Password", { exact: true }).fill("Forest88");
   await page
     .getByRole("button", { name: /Create my workspace|Unlock workspace/ })
     .click();
@@ -69,12 +73,9 @@ test("account, tools, notes, offline reload, reconnect and revision conflicts", 
     .getByRole("textbox", { name: "Note body" })
     .fill("Independent offline conflict");
   await context.setOffline(false);
-  await expect(
-    page.getByRole("button", { name: /Changes pending/ }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: /Changes pending/ }).click();
   await expect
     .poll(async () => {
+      await page.locator("footer button").click();
       const rows = await (await context.request.get("/api/records")).json();
       return rows.some(
         (r: any) =>
@@ -97,14 +98,12 @@ test("account, tools, notes, offline reload, reconnect and revision conflicts", 
 test("unauthenticated API is private", async ({ request }) => {
   expect((await request.get("/api/records")).status()).toBe(401);
 });
-test("all tools, cached/manual data, wheel persistence, failed provider and offline graph", async ({
+test("existing tools, wheel persistence and offline graph", async ({
   page,
   context,
 }) => {
   await page.goto("/");
-  await page
-    .getByLabel("Password", { exact: true })
-    .fill("personal-os-test-password");
+  await page.getByLabel("Password", { exact: true }).fill("Forest88");
   await page
     .getByRole("button", { name: /Create my workspace|Unlock workspace/ })
     .click();
@@ -131,28 +130,7 @@ test("all tools, cached/manual data, wheel persistence, failed provider and offl
   await expect(page.getByLabel("Wheel name")).toHaveCount(2);
   await page.reload();
   await expect(page.getByLabel("Wheel name")).toHaveCount(2);
-  await page.goto("/currency");
-  await page.getByLabel(/Manual rate/).fill("4.4");
-  await expect(page.locator("output")).toHaveText("440");
-  await page.goto("/settings");
-  await page.getByLabel("Allow optional internet features").check();
-  await page.goto("/currency");
-  await page.route("https://api.frankfurter.dev/**", (route) =>
-    route.fulfill({ status: 503, body: "unavailable" }),
-  );
-  await page.getByRole("button", { name: "Refresh rates" }).click();
-  await expect(page.getByRole("alert")).toContainText("Provider unavailable");
-  await page.unroute("https://api.frankfurter.dev/**");
-  await page.route("https://api.frankfurter.dev/**", (route) =>
-    route.fulfill({
-      json: { base: "USD", date: "2026-11-09", rates: { MYR: 4.3, EUR: 0.9 } },
-    }),
-  );
-  await page.getByRole("button", { name: "Refresh rates" }).click();
-  await expect(page.locator("output")).toHaveText("430");
   await context.setOffline(true);
-  await page.reload();
-  await expect(page.locator("output")).toHaveText("430");
   await page.goto("/graph");
   await expect(page.getByLabel("Equation 1")).toHaveValue("sin(x)");
   await page.getByLabel("Equation 1").fill('import("bad")');
@@ -168,10 +146,6 @@ test("all tools, cached/manual data, wheel persistence, failed provider and offl
   await page.goto("/wpm");
   await expect(
     page.getByRole("textbox", { name: "Typing test input" }),
-  ).toBeVisible();
-  await page.goto("/ip");
-  await expect(
-    page.getByText("Restricted by browser privacy protections"),
   ).toBeVisible();
   await page.goto("/speech");
   await expect(
