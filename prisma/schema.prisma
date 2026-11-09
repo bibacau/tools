@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "client"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+model Account {
+  id String @id @default("owner")
+  hash String
+}
+model Session {
+  id String @id
+  expires BigInt
+  @@index([expires])
+}
+model Record {
+  id String @id
+  rev Int @default(1)
+  payload String
+  updated BigInt
+  @@index([updated])
+}

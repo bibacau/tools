@@ -1,0 +1,53 @@
+{
+  "name": "personal-os",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run db:migrate && concurrently \"vite --host 0.0.0.0 --port 8002\" \"PORT=8003 node --env-file-if-exists=.env server/index.js\"",
+    "build": "tsc --noEmit && vite build",
+    "start": "npm run db:migrate && node --env-file-if-exists=.env server/index.js",
+    "postinstall": "prisma generate",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "test:e2e": "playwright test",
+    "db:migrate": "node --env-file-if-exists=.env server/migrate.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^6.19.0",
+    "@prisma/client": "6.19.0",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^11.10.0",
+    "cookie-parser": "^1.4.7",
+    "dompurify": "^3.4.17",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "idb": "^8.0.3",
+    "lucide-react": "^0.468.0",
+    "mathjs": "^14.8.1",
+    "multer": "^2.0.2",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "prettier": "^3.9.10",
+    "prisma": "6.19.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
+    "vite": "^7.2.2",
+    "vite-plugin-pwa": "^1.1.0",
+    "vitest": "^3.2.4"
+  }
+}

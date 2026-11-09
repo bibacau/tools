@@ -1,0 +1,29 @@
+services:
+  personal-os:
+    build: .
+    ports:
+      - "${PORT:-8002}:8002"
+    environment:
+      PORT: 8002
+      DATABASE_URL: file:/app/data/personal-os.db
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SPEECH_URL: http://speech:8000
+    volumes:
+      - personal-os-data:/app/data
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+  speech:
+    profiles: [speech]
+    build: ./speech
+    volumes:
+      - ./models:/models:ro
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  personal-os-data:
