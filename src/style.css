@@ -2007,3 +2007,4 @@ footer button {
   background: #7e8d4c;
   color: #fff4d9;
 }
+.return-button{padding:6px;background:transparent;border:0;color:var(--text);flex-shrink:0}.return-button:disabled{opacity:.3}.breadcrumb{min-width:0}.breadcrumb>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:620px){.breadcrumb{gap:6px}.header-actions{gap:7px}}

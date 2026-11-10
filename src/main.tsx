@@ -1,5 +1,11 @@
+import {
+  initializeNavigation,
+  navigateTo,
+  canReturn,
+  returnToPreviousPage,
+} from "./navigation";
 import { appFetch, nativeApp } from "./platform";
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import {
   LayoutDashboard,
@@ -10,6 +16,7 @@ import {
   Search,
   PanelLeftClose,
   ArrowUpRight,
+  ArrowLeft,
   ChevronRight,
   Check,
   Cloud,
@@ -45,7 +52,29 @@ function App() {
     [category, setCategory] = useState("All tools"),
     [collapsed, setCollapsed] = useState(false),
     [install, setInstall] = useState<any>(null);
+  const backRef = useRef<() => void>(() => {});
+  backRef.current = () => {
+    if (palette) {
+      setPalette(false);
+      return;
+    }
+    if (mobile) {
+      setMobile(false);
+      return;
+    }
+    returnToPreviousPage();
+  };
   useEffect(() => {
+    if (!nativeApp) return;
+    const listener = import("@capacitor/app").then(({ App }) =>
+      App.addListener("backButton", () => backRef.current()),
+    );
+    return () => {
+      void listener.then((handle) => handle.remove());
+    };
+  }, []);
+  useEffect(() => {
+    initializeNavigation();
     const off = store.subscribe(() => refresh((x) => x + 1));
     store.init().then(() => setReady(true));
     appFetch("/api/auth")
@@ -61,7 +90,13 @@ function App() {
       .catch(() => {
         if (localStorage.getItem("authorized")) setAuth(true);
       });
-    const pop = () => setPage(location.pathname.slice(1) || "dashboard");
+    const pop = () => {
+      setPage(location.pathname.slice(1) || "dashboard");
+      setPalette(false);
+      setMobile(false);
+      setQuery("");
+      window.scrollTo(0, 0);
+    };
     const key = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
@@ -132,7 +167,7 @@ function App() {
         : [...prefs.favorites, id],
     });
   function go(id: string) {
-    history.pushState({}, "", id === "dashboard" ? "/" : "/" + id);
+    navigateTo(id);
     setPage(id);
     setPalette(false);
     setMobile(false);
@@ -153,6 +188,8 @@ function App() {
       if (!r.ok) throw Error(v.error);
       localStorage.setItem("authorized", "yes");
       setAuth(true);
+      setMobile(false);
+      setPalette(false);
       setSetup(false);
       setPassword("");
       void store.sync();
@@ -502,6 +539,15 @@ function App() {
       <main>
         <header>
           <div className="breadcrumb">
+            <button
+              className="return-button"
+              aria-label="Go back"
+              title="Return to previous page"
+              disabled={!canReturn() && !palette && !mobile}
+              onClick={() => backRef.current()}
+            >
+              <ArrowLeft size={18} />
+            </button>
             <button
               className="mobile-menu"
               aria-label="Open navigation"

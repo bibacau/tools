@@ -65,6 +65,26 @@ try {
     await page.getByRole("textbox", { name: "Note body" }).textContent(),
     "Saved without a server",
   );
+  await page.getByRole("button", { name: "Go back", exact: true }).click();
+  await page
+    .getByRole("heading", { name: "Your everyday, simplified." })
+    .waitFor();
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Go back", exact: true })
+      .isDisabled(),
+    true,
+  );
+  await page
+    .getByRole("button", { name: /QR Generator Turn anything/ })
+    .click();
+  await page
+    .getByRole("heading", { name: "QR Generator", exact: true })
+    .waitFor();
+  await page.getByRole("button", { name: "Go back", exact: true }).click();
+  await page
+    .getByRole("heading", { name: "Your everyday, simplified." })
+    .waitFor();
   assert.equal(api.length, 0, "Native edition made an API request");
   assert.equal(
     await page.evaluate(
@@ -77,7 +97,7 @@ try {
     fullPage: true,
   });
   console.log(
-    "Standalone mobile browser: account, lock/unlock, reload persistence, zero API requests and mobile layout passed.",
+    "Standalone mobile browser: account, lock/unlock, reload persistence, zero API requests, Back navigation and mobile layout passed.",
   );
 } finally {
   await browser.close();

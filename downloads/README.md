@@ -11,7 +11,7 @@
 Download [personal-os.apk](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk) on your Android phone. Open the file and allow installation from your browser/file manager if Android asks.
 
 - Android 7.0/API 24 or newer, with an updated Android System WebView.
-- Version 1.0.0, package `com.bibacau.personalos`.
+- Version 1.0.1, package `com.bibacau.personalos`.
 - Standalone edition: locally bundled tools and local IndexedDB records; no server required and no server sync. Create a device-local password (8+ letters/numbers). Lock/unlock preserves data. Uninstalling or clearing Android app data deletes records, so export backups first.
 - Password verification uses salted PBKDF2-SHA256 (250,000 iterations). This app lock is not encryption of IndexedDB records; use Android device security.
 - Native downloads open Android's share sheet; choose Files or another save destination. Share/export files are stored temporarily in the app's private cache. Ordinary notes/images/URLs are not uploaded.
@@ -20,3 +20,7 @@ Download [personal-os.apk](https://github.com/bibacau/tools/raw/refs/heads/main/
 - Source and corresponding build instructions: [repository](https://github.com/bibacau/tools), [Android project](../android), [README](../README.md). Distributed under AGPL-3.0; see [LICENSE](../LICENSE) and [third-party notices](../licenses/README.md).
 
 Download page source is in `site/`. The self-hosted app serves it at `/download/` on port 8002, including the APK. The live website is https://bibacau.github.io/tools/; its button downloads the APK directly from that same website. GitHub Pages publishes the gh-pages branch.
+
+## Version 1.0.1
+
+Android Back returns to the previous tool/page, or the dashboard if no previous app page exists. At the dashboard it stays in the app instead of closing it. Back dismisses an open menu/search first. A visible Back arrow also works on the website; opening a tool URL directly provides a dashboard return path. Install this APK over the previous version to update without uninstalling. The application ID and signing certificate are unchanged, preserving device data.

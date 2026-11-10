@@ -14,13 +14,13 @@ jobs:
       - name: Check APK and prepare static website
         run: |
           python3 - <<'PY'
-          import hashlib, json, pathlib
+          import hashlib, json, pathlib, re
           root = pathlib.Path('.')
           metadata = json.loads((root/'downloads/release.json').read_text())
           apk = (root/'downloads/personal-os.apk').read_bytes()
           assert len(apk) == metadata['sizeBytes']
           assert hashlib.sha256(apk).hexdigest() == metadata['sha256']
-          assert 'href="personal-os.apk"' in (root/'site/index.html').read_text()
+          assert re.search(r'href="personal-os[.]apk(?:[?][^"]*)?"', (root/'site/index.html').read_text())
           (root/'site/personal-os.apk').write_bytes(apk)
           (root/'site/release.json').write_text(json.dumps(metadata, indent=2))
           PY

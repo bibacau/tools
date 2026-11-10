@@ -108,8 +108,8 @@ This implementation uses Vite/React rather than Next.js, custom CSS rather than 
 
 - TypeScript check and production PWA build: passed.
 - ESLint: passed.
-- Vitest: 12 tests passed.
-- Playwright/Chromium: 7 end-to-end scenarios passed, including actual offline reload/editing, reconnect synchronization, preservation of conflicting offline edits, all tool routes, URL restoration, image transparency/compositing/ZIP downloads, model-loading failures, wheel persistence and mobile navigation.
+- Vitest: 16 tests passed.
+- Playwright/Chromium: 9 end-to-end scenarios passed, including actual offline reload/editing, reconnect synchronization, preservation of conflicting offline edits, all tool routes, URL restoration, image transparency/compositing/ZIP downloads, model-loading failures, wheel persistence and mobile navigation.
 - Docker Compose configuration validated. The original main application image built and ran successfully as a non-root user. Authenticated writes, the health endpoint, automatic migration and account/SQLite persistence across a container restart passed.
 - Optional Vosk model download was denied by the cloud's outbound policy (`alphacephei.com`, HTTP proxy 403). The required domain is saved in the environment draft. Review/save and publish that configuration to enable future setup downloads, or install the model on your Docker host following the instructions above. No TLS/checksum verification was disabled. Real speech transcription remains unverified.
 
@@ -178,3 +178,9 @@ node scripts/publish-download-site.mjs
 This uses your existing Git credentials, builds a static deployment commit without changing your checkout, and pushes it to `gh-pages` without force-pushing. GitHub's native **pages build and deployment** workflow deploys that branch. Do not use the default Actions token to push a publishing branch: those commits may not trigger a Pages build. `.github/workflows/download-site.yml` validates the main-branch APK checksum and prepares a downloadable website artifact; publishing uses the script above.
 
 The earlier API-based Pages activation failed with “Resource not accessible by integration”. Publishing the dedicated branch resolved activation; [the first Pages deployment succeeded](https://github.com/bibacau/tools/actions/runs/42827693025). Repository-owner settings changes are no longer needed for this site. Mobile browser checks verify a direct APK download and checksum; the published APK has the same SHA-256 recorded in `downloads/release.json`.
+
+### Back/Return navigation (Android 1.0.1)
+
+The Android hardware/gesture Back control now uses the Capacitor App plugin instead of closing the Activity. It closes an open sidebar/search first, then returns through previous app pages. A direct tool entry has a dashboard fallback; Back at the native dashboard remains there (Android Home can still leave the app). The website also has a visible Back arrow and supports browser Back/Forward. A directly opened tool URL gets a dashboard history entry, so its first Back returns home. Intentionally navigating away from the browser's root remains possible; this does not install an infinite browser-history trap.
+
+APK 1.0.1 has versionCode 2 and the same signing key/application ID as 1.0.0. Install it over the old version; do not uninstall if you want to keep local data. Browser tests exercise deep entry, prior tool pages, Back/Forward, reload, dashboard fallback and mobile layout. Android release compilation/plugin registration and signature are checked; hardware/predictive Back has not been physically tested on a device.

@@ -22,8 +22,8 @@ await writeFile(
   JSON.stringify(
     {
       name: "Personal OS",
-      version: "1.0.0",
-      versionCode: 1,
+      version: "1.0.1",
+      versionCode: 2,
       packageId: "com.bibacau.personalos",
       minAndroid: "7.0",
       minSdk: 24,
