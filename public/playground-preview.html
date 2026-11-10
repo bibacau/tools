@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob: https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+  </head>
+  <body>
+    <script>
+      /* This document is ONLY used in an opaque-origin, allow-scripts-only sandbox. */
+      addEventListener(
+        "message",
+        function receive(event) {
+          if (
+            event.source !== parent ||
+            event.data?.kind !== "personal-os-preview"
+          )
+            return;
+          const { token, html, css, js, external } = event.data;
+          parent.postMessage({ kind: "preview-ready", token }, "*");
+          if (
+            typeof token !== "string" ||
+            typeof html !== "string" ||
+            typeof css !== "string" ||
+            typeof js !== "string"
+          )
+            return;
+          const policy =
+            "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:" +
+            (external ? " https:" : "") +
+            "; style-src 'unsafe-inline'" +
+            (external ? " https:" : "") +
+            "; img-src data: blob:" +
+            (external ? " https:" : "") +
+            "; font-src data:" +
+            (external ? " https:" : "") +
+            "; connect-src " +
+            (external ? "https:" : "'none'") +
+            "; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
+          const safe = (v) => JSON.stringify(v).replace(/</g, "\\u003c");
+          const bridge = `(()=>{const token=${safe(token)};const send=(level,args)=>{try{parent.postMessage({kind:'preview-console',token,level,text:args.map(v=>{try{return typeof v==='string'?v:JSON.stringify(v)}catch{return String(v)}}).join(' ').slice(0,4000)},'*')}catch{}};for(const level of ['log','info','warn','error']){const old=console[level];console[level]=(...args)=>{send(level,args);old.apply(console,args)}}addEventListener('error',e=>send('error',[e.message+' ('+e.lineno+':'+e.colno+')']));addEventListener('unhandledrejection',e=>send('error',[String(e.reason)]));})();`;
+          const script = URL.createObjectURL(
+            new Blob([js + "\n//# sourceURL=playground.js"], {
+              type: "text/javascript",
+            }),
+          );
+          document.open();
+          document.write(
+            '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' +
+              policy +
+              '"><script>' +
+              bridge +
+              "<\/script><style>" +
+              css +
+              "</style></head><body>" +
+              html +
+              '<script src="' +
+              script +
+              '"><\/script></body></html>',
+          );
+          document.close();
+        },
+        { once: true },
+      );
+    </script>
+  </body>
+</html>
