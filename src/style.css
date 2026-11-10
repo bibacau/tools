@@ -2007,4 +2007,308 @@ footer button {
   background: #7e8d4c;
   color: #fff4d9;
 }
-.return-button{padding:6px;background:transparent;border:0;color:var(--text);flex-shrink:0}.return-button:disabled{opacity:.3}.breadcrumb{min-width:0}.breadcrumb>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:620px){.breadcrumb{gap:6px}.header-actions{gap:7px}}
+.return-button {
+  padding: 6px;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.return-button:disabled {
+  opacity: 0.3;
+}
+.breadcrumb {
+  min-width: 0;
+}
+.breadcrumb > b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 620px) {
+  .breadcrumb {
+    gap: 6px;
+  }
+  .header-actions {
+    gap: 7px;
+  }
+}
+/* Focused workspaces use the same shell and theme tokens as the everyday tools. */
+.drawing-toolbar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.drawing-toolbar button {
+  font-size: 11px;
+  text-transform: capitalize;
+  padding: 8px 11px;
+}
+.drawing-toolbar .active {
+  background: var(--accent);
+  color: #171524;
+}
+.board-canvas-host {
+  width: 100%;
+  min-height: 430px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+  background: white;
+}
+.board-canvas-host .canvas-container {
+  touch-action: none;
+}
+.board-grid .canvas-container:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#7982a622 1px, transparent 1px),
+    linear-gradient(90deg, #7982a622 1px, transparent 1px);
+  background-size: var(--grid-size, 20px) var(--grid-size, 20px);
+  background-position: var(--grid-x, 0) var(--grid-y, 0);
+  z-index: 2;
+}
+.whiteboard .actions > label {
+  margin: 8px 0;
+  font-size: 10px;
+  max-width: 180px;
+}
+.whiteboard .actions input[type="number"] {
+  width: 75px;
+}
+.whiteboard .actions input[type="range"] {
+  width: 100px;
+}
+.selection-properties {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  margin-top: 12px;
+}
+.selection-properties .form-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.selection-properties label {
+  min-width: 75px;
+  max-width: 130px;
+  margin: 8px 0;
+}
+.whiteboard .actions > select,
+.playground .actions > select {
+  max-width: 320px;
+}
+.playground-panels {
+  display: grid;
+  gap: 16px;
+  margin: 12px 0 20px;
+}
+.playground-panels > div {
+  min-width: 0;
+}
+.cm-editor {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 13px;
+}
+.cm-scroller {
+  font-family: ui-monospace, monospace;
+}
+.preview-scroll {
+  overflow: auto;
+  background: #e7e9ee;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  height: 490px;
+  max-width: 100%;
+  padding: 8px;
+}
+.code-preview {
+  height: 100%;
+  min-width: 280px;
+  border: 0;
+  background: white;
+  display: block;
+  margin: auto;
+}
+.preview-console {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 200px;
+  min-height: 70px;
+  padding: 12px;
+  overflow: auto;
+  margin-bottom: 18px;
+}
+.preview-console pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.7 ui-monospace,
+    monospace;
+  margin: 3px 0;
+}
+.playground .actions label {
+  margin: 6px 0;
+  max-width: 230px;
+  min-width: 90px;
+  font-size: 11px;
+}
+.range-split {
+  flex: 1;
+}
+.editor-fullscreen {
+  position: fixed;
+  inset: 12px;
+  z-index: 70;
+  overflow: auto;
+  margin: 0;
+}
+.race-countdown {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  padding: 20px;
+  color: var(--accent);
+}
+.race-tracks {
+  display: grid;
+  gap: 18px;
+  margin: 20px 0;
+}
+.race-track > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.race-track span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.race-road {
+  position: relative;
+  height: 38px;
+  background: var(--bg);
+  border-bottom: 2px dashed var(--border);
+  border-radius: 7px;
+  margin-top: 10px;
+}
+.race-car {
+  position: absolute;
+  top: 4px;
+  width: 42px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #18202b;
+  font-size: 23px;
+  transition: left 0.15s linear;
+}
+.race-track progress {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--accent);
+  opacity: 0.5;
+}
+.race-passage {
+  font-size: 18px;
+  max-height: 210px;
+}
+.race .actions label {
+  margin: 0;
+  max-width: 180px;
+}
+.guest-race {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 22px;
+}
+.guest-race > a {
+  display: inline-block;
+  margin-bottom: 22px;
+}
+.whiteboard .canvas-container {
+  max-width: 100%;
+}
+.playground .actions {
+  align-items: end;
+}
+@media (max-width: 900px) {
+  .playground-panels {
+    grid-template-columns: 1fr !important;
+  }
+  .range-split {
+    display: none !important;
+  }
+  .playground .preview-scroll {
+    height: 380px;
+  }
+  .playground .cm-editor {
+    max-height: 350px;
+  }
+  .whiteboard .actions {
+    gap: 6px;
+  }
+  .whiteboard .actions button {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+}
+@media (max-width: 620px) {
+  .race-road {
+    height: 35px;
+  }
+  .race-track > div:first-child {
+    font-size: 10px;
+  }
+  .race-track span {
+    font-size: 9px;
+  }
+  .race-passage {
+    font-size: 16px;
+  }
+  .editor-fullscreen {
+    inset: 4px;
+    padding: 14px;
+  }
+  .drawing-toolbar button {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+  .whiteboard .actions > select,
+  .playground .actions > select {
+    width: 100%;
+    max-width: 100%;
+  }
+  .whiteboard .actions > label {
+    max-width: 140px;
+  }
+  .playground .actions label {
+    max-width: 145px;
+  }
+  .selection-properties input {
+    padding: 8px;
+  }
+  .guest-race {
+    padding: 0 14px;
+  }
+  .guest-race h1 {
+    font-size: 28px;
+  }
+}
+.board-controls {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}

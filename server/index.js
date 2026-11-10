@@ -1,9 +1,11 @@
+import { existsSync, readFileSync } from "node:fs";
+import { attachRaces } from "./races.js";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcryptjs";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSQLite3 } from "@prisma/adapter-better-sqlite3";
 import { fileURLToPath } from "node:url";
@@ -12,23 +14,67 @@ import multer from "multer";
 const db = new PrismaClient({
   adapter: new PrismaBetterSQLite3({ url: process.env.DATABASE_URL }),
 });
+function previewBootHash() {
+  const base = path.dirname(fileURLToPath(import.meta.url));
+  const built = path.resolve(base, "../dist/preview-bootstrap.js");
+  return createHash("sha256")
+    .update(
+      readFileSync(
+        existsSync(built)
+          ? built
+          : path.resolve(base, "../src/preview-bootstrap.js"),
+      ),
+    )
+    .digest("base64");
+}
 const app = express();
+app.get("/playground-preview.html", (req, res) => {
+  res.set({
+    "Content-Security-Policy":
+      "sandbox allow-scripts; frame-ancestors 'self'; default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob: https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+    "Cross-Origin-Resource-Policy": "cross-origin",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+  });
+  const built = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../dist/playground-preview.html",
+  );
+  res.sendFile(
+    existsSync(built)
+      ? built
+      : path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "../public/playground-preview.html",
+        ),
+  );
+});
 app.use(
   helmet({
     crossOriginEmbedderPolicy: true,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'wasm-unsafe-eval'", "blob:"],
+        scriptSrc: [
+          "'self'",
+          "'wasm-unsafe-eval'",
+          "blob:",
+          () => "'sha256-" + previewBootHash() + "'",
+        ],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: ["'self'", "https://staticimgly.com", "blob:"],
+        connectSrc: [
+          "'self'",
+          "https://staticimgly.com",
+          "blob:",
+          "ws:",
+          "wss:",
+        ],
         workerSrc: ["'self'", "blob:"],
       },
     },
   }),
 );
-app.use(express.json({ limit: "5mb" }));
+app.use(express.json({ limit: "20mb" }));
 app.use(cookieParser());
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store");
@@ -225,6 +271,20 @@ app.use((e, req, res, _next) => {
   res.status(500).json({ error: "The server could not complete the request." });
 });
 const port = Number(process.env.PORT || 8003);
-app.listen(port, "0.0.0.0", () =>
+const httpServer = app.listen(port, "0.0.0.0", () =>
   console.log(`Personal OS listening on ${port}`),
 );
+
+attachRaces(httpServer, {
+  authorize: async (req) => {
+    const token =
+      (req.headers.cookie || "")
+        .split(";")
+        .map((x) => x.trim())
+        .find((x) => x.startsWith("session="))
+        ?.slice(8) || "";
+    return !!(await session({
+      cookies: { session: decodeURIComponent(token) },
+    }));
+  },
+});

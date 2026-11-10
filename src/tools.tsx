@@ -16,10 +16,20 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import * as store from "./store";
-import { download, copy, weightedIndex, typingStats, cps } from "./utils";
+import {
+  download,
+  copy,
+  weightedIndex,
+  typingStats,
+  cps,
+  dataURLToBlob,
+} from "./utils";
 import { units, convert, volumeMass, densities } from "./units";
 const ImageTools = lazy(() => import("./image-tools"));
 const URLCleaner = lazy(() => import("./url-cleaner"));
+const Whiteboard = lazy(() => import("./whiteboard"));
+const Playground = lazy(() => import("./playground"));
+const TypingRace = lazy(() => import("./typing-race"));
 const Graph = lazy(() => import("./graph"));
 const record = (name: string, value: string, extra: any = {}) =>
   store.create("record", { name, value, ...extra });
@@ -446,7 +456,7 @@ function QR() {
         <div className="actions">
           <button
             onClick={async () => {
-              download("qr.png", await (await fetch(url)).blob());
+              download("qr.png", dataURLToBlob(url));
               save();
             }}
           >
@@ -469,7 +479,7 @@ function QR() {
               try {
                 await navigator.clipboard.write([
                   new ClipboardItem({
-                    "image/png": await (await fetch(url)).blob(),
+                    "image/png": dataURLToBlob(url),
                   }),
                 ]);
               } catch {
@@ -1223,6 +1233,34 @@ const passages = [
   "Good tools make room for the things that matter. A notebook for a thought, a little chance for a decision, and a clear space to begin again. Every day is another opportunity to make something useful and kind.",
 ];
 function WPM() {
+  const [mode, setMode] = useState("test");
+  return (
+    <>
+      <div className="filters">
+        <button
+          className={mode === "test" ? "active" : ""}
+          onClick={() => setMode("test")}
+        >
+          Typing test
+        </button>
+        <button
+          className={mode === "race" ? "active" : ""}
+          onClick={() => setMode("race")}
+        >
+          Typing race
+        </button>
+      </div>
+      {mode === "test" ? (
+        <TypingTest />
+      ) : (
+        <Suspense fallback={<div className="panel">Opening race…</div>}>
+          <TypingRace />
+        </Suspense>
+      )}
+    </>
+  );
+}
+function TypingTest() {
   const [duration, setDuration] = useState(30),
     [target, setTarget] = useState(() =>
       passages[Math.floor(Math.random() * passages.length)].repeat(12),
@@ -1550,6 +1588,18 @@ function Speech() {
 }
 export default function Tools({ id }: { id: string; prefs: any }) {
   switch (id) {
+    case "whiteboard":
+      return (
+        <Suspense fallback={<div className="panel">Opening whiteboard…</div>}>
+          <Whiteboard />
+        </Suspense>
+      );
+    case "playground":
+      return (
+        <Suspense fallback={<div className="panel">Opening code editor…</div>}>
+          <Playground />
+        </Suspense>
+      );
     case "image-converter":
     case "background-remover":
       return (

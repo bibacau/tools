@@ -11,8 +11,26 @@ import {
   MousePointer2,
   Keyboard,
   Mic,
+  PenTool,
+  Code2,
 } from "lucide-react";
 export const tools = [
+  {
+    id: "whiteboard",
+    name: "Whiteboard",
+    description: "An infinite canvas for your next idea.",
+    icon: PenTool,
+    color: "teal",
+    category: "Productivity",
+  },
+  {
+    id: "playground",
+    name: "HTML/CSS Playground",
+    description: "Build, experiment, and preview your code.",
+    icon: Code2,
+    color: "blue",
+    category: "Productivity",
+  },
   {
     id: "image-converter",
     name: "Image Format Converter",
@@ -96,7 +114,7 @@ export const tools = [
   {
     id: "wpm",
     name: "Typing Test",
-    description: "Your thoughts, at the speed of type.",
+    description: "Typing race with friends or a computer, plus solo WPM practice.",
     icon: Keyboard,
     color: "teal",
     category: "Play & Practice",

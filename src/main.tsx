@@ -32,6 +32,7 @@ import { tools } from "./catalog";
 import * as store from "./store";
 import { download } from "./utils";
 import "./style.css";
+const RaceGuest = lazy(() => import("./typing-race"));
 const Tool = lazy(() => import("./tools"));
 function App() {
   const [ready, setReady] = useState(false),
@@ -1094,7 +1095,11 @@ function App() {
             </div>
             <span className="eyebrow">JUMP TO A TOOL</span>
             {tools
-              .filter((t) => t.name.toLowerCase().includes(query.toLowerCase()))
+              .filter((t) =>
+                (t.name + " " + t.description)
+                  .toLowerCase()
+                  .includes(query.toLowerCase()),
+              )
               .map((t) => (
                 <button
                   className="command-row"
@@ -1112,4 +1117,16 @@ function App() {
     </div>
   );
 }
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  location.pathname === "/race" ? (
+    <div className="guest-race">
+      <a href="/">Personal OS</a>
+      <h1>Race with friends.</h1>
+      <Suspense fallback={<p>Opening race…</p>}>
+        <RaceGuest guest />
+      </Suspense>
+    </div>
+  ) : (
+    <App />
+  ),
+);

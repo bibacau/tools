@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -13,12 +15,59 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    "import.meta.env.VITE_PREVIEW_BOOT_HASH": JSON.stringify(
+      createHash("sha256")
+        .update(
+          readFileSync(new URL("./src/preview-bootstrap.js", import.meta.url)),
+        )
+        .digest("base64"),
+    ),
+  },
   plugins: [
+    {
+      name: "isolated-preview-bootstrap",
+      generateBundle() {
+        this.emitFile({
+          type: "asset",
+          fileName: "preview-bootstrap.js",
+          source: readFileSync(
+            new URL("./src/preview-bootstrap.js", import.meta.url),
+          ),
+        });
+      },
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const boot = readFileSync(
+            new URL("./src/preview-bootstrap.js", import.meta.url),
+          );
+          const hash = createHash("sha256").update(boot).digest("base64");
+          if (req.url?.startsWith("/playground-preview.html"))
+            res.setHeader(
+              "Content-Security-Policy",
+              "sandbox allow-scripts;frame-ancestors 'self';default-src 'none';script-src 'unsafe-inline' 'unsafe-eval' blob: https:;style-src 'unsafe-inline' https:;img-src data: blob: https:;connect-src https:",
+            );
+          else
+            res.setHeader(
+              "Content-Security-Policy",
+              "default-src 'self';script-src 'self' 'unsafe-eval' blob: 'sha256-" +
+                hash +
+                "';style-src 'self' 'unsafe-inline';img-src 'self' data: blob:;connect-src 'self' ws: wss: https://staticimgly.com;worker-src 'self' blob:",
+            );
+          next();
+        });
+      },
+    },
     react(),
     VitePWA({
       disable: nativeBuild,
       registerType: "prompt",
-      includeAssets: ["icon.svg", "icon-192.png", "icon-512.png"],
+      includeAssets: [
+        "playground-preview.html",
+        "icon.svg",
+        "icon-192.png",
+        "icon-512.png",
+      ],
       manifest: {
         name: "Personal OS",
         short_name: "Personal OS",
@@ -63,7 +112,11 @@ export default defineConfig({
         ],
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//, /^\/download(?:\/|$)/],
+        navigateFallbackDenylist: [
+          /^\/playground-preview[.]html$/,
+          /^\/api\//,
+          /^\/download(?:\/|$)/,
+        ],
         maximumFileSizeToCacheInBytes: 5000000,
       },
     }),
@@ -73,7 +126,7 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
     },
-    proxy: { "/api": "http://127.0.0.1:8003" },
+    proxy: { "/api": { target: "http://127.0.0.1:8003", ws: true } },
   },
   build: {
     outDir: nativeBuild ? "dist-native" : "dist",

@@ -85,6 +85,33 @@ try {
   await page
     .getByRole("heading", { name: "Your everyday, simplified." })
     .waitFor();
+  await page.goto("http://127.0.0.1:8006/whiteboard");
+  await page.getByLabel("Password", { exact: true }).fill("Forest88");
+  await page.getByRole("button", { name: "Unlock workspace" }).click();
+  await page
+    .getByRole("button", { name: "New whiteboard", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Add rectangle", exact: true })
+    .click();
+  await page.getByText(/1 objects ·/).waitFor();
+  await page.getByRole("status").filter({ hasText: "Saved" }).waitFor();
+  await page.goto("http://127.0.0.1:8006/playground");
+  await page.getByLabel("Password", { exact: true }).fill("Forest88");
+  await page.getByRole("button", { name: "Unlock workspace" }).click();
+  await page.getByRole("button", { name: "New project", exact: true }).click();
+  await page
+    .frameLocator("iframe")
+    .getByRole("heading", { name: "Hello, little world." })
+    .waitFor();
+  await page
+    .frameLocator("iframe")
+    .getByRole("button", { name: "Say hello" })
+    .click();
+  await page
+    .getByRole("log")
+    .filter({ hasText: "Hello from your sandbox!" })
+    .waitFor();
   assert.equal(api.length, 0, "Native edition made an API request");
   assert.equal(
     await page.evaluate(
@@ -97,7 +124,7 @@ try {
     fullPage: true,
   });
   console.log(
-    "Standalone mobile browser: account, lock/unlock, reload persistence, zero API requests, Back navigation and mobile layout passed.",
+    "Standalone mobile browser: account, lock/unlock, reload persistence, zero API requests, Back navigation, whiteboard editing, Playground execution and mobile layout passed.",
   );
 } finally {
   await browser.close();

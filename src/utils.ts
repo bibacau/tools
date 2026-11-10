@@ -71,3 +71,11 @@ async function nativeDownload(
     dialogTitle: "Save or share your Personal OS export",
   });
 }
+
+/** Decode an in-memory image URL without a fetch/CSP or network dependency. */
+export function dataURLToBlob(url: string) {
+  const match = /^data:([^;,]+);base64,(.*)$/s.exec(url);
+  if (!match) throw Error("Invalid image data URL");
+  const bytes = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
+  return new Blob([bytes], { type: match[1] });
+}

@@ -7,3 +7,5 @@ IMG.LY's IS-Net model data is governed by the background-removal project's publi
 ONNX Runtime Web 1.21.0 is MIT licensed (Microsoft); fflate is MIT licensed. React, Vite, Lucide, mathjs, Prisma and other existing libraries retain their respective licenses in their npm packages. Versions/integrity hashes are pinned in package-lock.json. Original woodland.svg is project artwork under the application's license; it contains no third-party illustration assets.
 
 The Android edition uses Capacitor core/Android/CLI and Filesystem/Share plugins under the MIT license. The Gradle wrapper is Apache-2.0. Android SDK/JDK/Gradle are build prerequisites and retain their upstream licenses; they are not bundled in the APK. The APK includes the corresponding web/native application code built from this repository; signing secrets are not part of corresponding source.
+
+Whiteboard, Playground and Typing Race add Fabric.js, CodeMirror/react-codemirror, jsPDF, ws and Prettier, all MIT licensed. Their copyright and permission notices are retained in [new-tools.txt](new-tools.txt).
