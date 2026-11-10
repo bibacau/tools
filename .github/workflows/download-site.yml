@@ -1,4 +1,4 @@
-name: Publish Android download website
+name: Validate Android download website
 on:
   push:
     branches: [main]
@@ -6,29 +6,25 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: pages
-  cancel-in-progress: false
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare download files
+      - name: Check APK and prepare static website
         run: |
-          cp downloads/personal-os.apk site/personal-os.apk
-          cp downloads/release.json site/release.json
-      - uses: actions/configure-pages@v5
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          root = pathlib.Path('.')
+          metadata = json.loads((root/'downloads/release.json').read_text())
+          apk = (root/'downloads/personal-os.apk').read_bytes()
+          assert len(apk) == metadata['sizeBytes']
+          assert hashlib.sha256(apk).hexdigest() == metadata['sha256']
+          assert 'href="personal-os.apk"' in (root/'site/index.html').read_text()
+          (root/'site/personal-os.apk').write_bytes(apk)
+          (root/'site/release.json').write_text(json.dumps(metadata, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
         with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
+          name: personal-os-download-website
           path: site
-      - name: Publish
-        id: deployment
-        uses: actions/deploy-pages@v4

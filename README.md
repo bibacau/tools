@@ -1,8 +1,8 @@
 # Personal OS
 
-[![Download APK — Personal OS for Android](site/assets/download-apk.svg)](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk)
+[![Download APK — Personal OS for Android](site/assets/download-apk.svg)](https://bibacau.github.io/tools/personal-os.apk)
 
-[Open the Android download page](https://github.com/bibacau/tools/tree/main/downloads#readme). Tap the button on your phone, open the downloaded APK, then tap Install.
+[Open the Android download website](https://bibacau.github.io/tools/). Tap the button on your phone, open the downloaded APK, then tap Install.
 
 A private, offline-first workspace with twelve everyday tools. React + TypeScript + Vite; an Express server; Prisma's JavaScript query engine over SQLite; IndexedDB for device-local records; a versioned Workbox PWA. No CDN assets or hosted fonts for the application shell; background removal optionally downloads its model/runtime. Runs on **port 8002**.
 
@@ -167,6 +167,14 @@ APK source: `capacitor.config.ts`, `android/`, `src/platform.ts`; builds use `VI
 
 The static website in `site/` uses local artwork/fonts, responsive layouts, installation instructions, limitations, source/license links and the release checksum. The existing Express app serves it publicly at `/download/` on port **8002**, with the actual APK at `/download/personal-os.apk`; Docker copies both `site/` and `downloads/`.
 
-`.github/workflows/download-site.yml` copies the APK/metadata into the static deployment and publishes to GitHub Pages on changes to the website/APK. It attempts to enable Pages using the repository's workflow token. The intended public address is `https://bibacau.github.io/tools/`. If repository settings prevent that workflow from enabling Pages, the owner must select **Settings → Pages → Source: GitHub Actions**, then re-run “Publish Android download website” under Actions. A configured workflow or pushed source alone does not establish that the site is publicly live; use the deployment result.
+The public website is **https://bibacau.github.io/tools/**. Its Download button links directly to **personal-os.apk on the same website**, so a phone starts the APK download without opening GitHub's file view. The APK and release metadata are deployed alongside the HTML/CSS/assets.
 
-Publication observation: the initial GitHub Pages workflow reached the Pages API but GitHub rejected site creation with **“Resource not accessible by integration”** ([run](https://github.com/bibacau/tools/actions/runs/42746662105)). Repository-owner activation of Pages (Settings → Pages → GitHub Actions) is required before the custom public download site can deploy. The committed APK and GitHub download directory remain publicly downloadable independently of Pages. The local `/download/` website was verified, including its APK hash and mobile layout.
+GitHub Pages now publishes from `gh-pages`. After committing updates to `site/` or `downloads/`, publish with:
+
+```sh
+node scripts/publish-download-site.mjs
+```
+
+This uses your existing Git credentials, builds a static deployment commit without changing your checkout, and pushes it to `gh-pages` without force-pushing. GitHub's native **pages build and deployment** workflow deploys that branch. Do not use the default Actions token to push a publishing branch: those commits may not trigger a Pages build. `.github/workflows/download-site.yml` validates the main-branch APK checksum and prepares a downloadable website artifact; publishing uses the script above.
+
+The earlier API-based Pages activation failed with “Resource not accessible by integration”. Publishing the dedicated branch resolved activation; [the first Pages deployment succeeded](https://github.com/bibacau/tools/actions/runs/42827693025). Repository-owner settings changes are no longer needed for this site. Mobile browser checks verify a direct APK download and checksum; the published APK has the same SHA-256 recorded in `downloads/release.json`.

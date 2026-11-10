@@ -1,8 +1,8 @@
 # Download Personal OS for Android
 
-[![Download APK — Personal OS for Android](../site/assets/download-apk.svg)](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk)
+[![Download APK — Personal OS for Android](../site/assets/download-apk.svg)](https://bibacau.github.io/tools/personal-os.apk)
 
-**On your phone, tap the big Download APK button above.** The download starts directly; you do not need GitHub Pages or a GitHub account.
+**[Open the download website](https://bibacau.github.io/tools/)**, then tap **Download for Android** on your phone. You can also tap the big Download APK button above. The download starts directly; you do not need GitHub Pages or a GitHub account.
 
 1. Wait for **personal-os.apk** to finish downloading.
 2. Tap the downloaded file (or find it in your phone's **Downloads** folder).
@@ -19,4 +19,4 @@ Download [personal-os.apk](https://github.com/bibacau/tools/raw/refs/heads/main/
 - The APK is release-signed (not a debug build). Signature and APK SHA-256 are in [release.json](release.json). It has not been installed/tested on a physical Android device or emulator. Mobile web behavior, packaged assets, signature, manifest and build have been checked.
 - Source and corresponding build instructions: [repository](https://github.com/bibacau/tools), [Android project](../android), [README](../README.md). Distributed under AGPL-3.0; see [LICENSE](../LICENSE) and [third-party notices](../licenses/README.md).
 
-Download page source is in `site/`. The self-hosted app serves it at `/download/` on port 8002, including the APK. The GitHub Pages workflow publishes a separate static download site when Pages deployment is available for the repository.
+Download page source is in `site/`. The self-hosted app serves it at `/download/` on port 8002, including the APK. The live website is https://bibacau.github.io/tools/; its button downloads the APK directly from that same website. GitHub Pages publishes the gh-pages branch.
