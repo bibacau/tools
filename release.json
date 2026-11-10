@@ -1,0 +1,17 @@
+{
+  "name": "Personal OS",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "packageId": "com.bibacau.personalos",
+  "minAndroid": "7.0",
+  "minSdk": 24,
+  "targetSdk": 36,
+  "file": "personal-os.apk",
+  "sizeBytes": 9537429,
+  "sha256": "585ab63a4b074c407ffb251aecf06a52b00b761f0144cd4bbeee45b09900c831",
+  "signingCertificateSha256": "86ab1eb2cc8283741b3c0c584ab8175eff868ab87689edf9d253622b884b431f",
+  "edition": "Standalone local storage; no server sync",
+  "source": "https://github.com/bibacau/tools",
+  "license": "AGPL-3.0",
+  "realDeviceTested": false
+}
