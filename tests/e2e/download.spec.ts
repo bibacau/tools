@@ -14,6 +14,14 @@ test("public download page serves a real signed APK with matching metadata and m
   const metadata = await (await request.get("/download/release.json")).json();
   expect(metadata.packageId).toBe("com.bibacau.personalos");
   expect(metadata.sizeBytes).toBeGreaterThan(1_000_000);
+  await page.route(
+    "https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk",
+    (route) =>
+      route.fulfill({
+        path: process.cwd() + "/downloads/personal-os.apk",
+        contentType: "application/octet-stream",
+      }),
+  );
   const event = page.waitForEvent("download");
   await page
     .getByRole("link", { name: "Download for Android", exact: false })

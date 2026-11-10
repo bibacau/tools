@@ -1,4 +1,12 @@
-# Personal OS for Android
+# Download Personal OS for Android
+
+[![Download APK — Personal OS for Android](../site/assets/download-apk.svg)](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk)
+
+**On your phone, tap the big Download APK button above.** The download starts directly; you do not need GitHub Pages or a GitHub account.
+
+1. Wait for **personal-os.apk** to finish downloading.
+2. Tap the downloaded file (or find it in your phone's **Downloads** folder).
+3. If Android asks, allow installation from your browser, then tap **Install**.
 
 Download [personal-os.apk](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk) on your Android phone. Open the file and allow installation from your browser/file manager if Android asks.
 

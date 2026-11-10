@@ -1,5 +1,9 @@
 # Personal OS
 
+[![Download APK — Personal OS for Android](site/assets/download-apk.svg)](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk)
+
+[Open the Android download page](https://github.com/bibacau/tools/tree/main/downloads#readme). Tap the button on your phone, open the downloaded APK, then tap Install.
+
 A private, offline-first workspace with twelve everyday tools. React + TypeScript + Vite; an Express server; Prisma's JavaScript query engine over SQLite; IndexedDB for device-local records; a versioned Workbox PWA. No CDN assets or hosted fonts for the application shell; background removal optionally downloads its model/runtime. Runs on **port 8002**.
 
 ## Docker
