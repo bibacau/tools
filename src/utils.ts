@@ -1,8 +1,15 @@
+import { nativeApp } from "./platform";
 export function download(
   name: string,
   content: string | Blob,
   type = "text/plain",
 ) {
+  if (nativeApp) {
+    void nativeDownload(name, content, type).catch((e) =>
+      alert("Export failed: " + e.message),
+    );
+    return;
+  }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(
     content instanceof Blob ? content : new Blob([content], { type }),
@@ -34,3 +41,33 @@ export function typingStats(typed: string, target: string, seconds: number) {
   };
 }
 export const currency = (amount: number, rate: number) => amount * rate;
+
+async function nativeDownload(
+  name: string,
+  content: string | Blob,
+  type: string,
+) {
+  const [{ Filesystem, Directory }, { Share }] = await Promise.all([
+    import("@capacitor/filesystem"),
+    import("@capacitor/share"),
+  ]);
+  const blob =
+    content instanceof Blob ? content : new Blob([content], { type });
+  const data = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1]);
+    reader.onerror = () => reject(Error("Unable to read export"));
+    reader.readAsDataURL(blob);
+  });
+  const file = await Filesystem.writeFile({
+    path: "exports/" + Date.now() + "-" + name.replace(/[^A-Za-z0-9._-]/g, "_"),
+    data,
+    directory: Directory.Cache,
+    recursive: true,
+  });
+  await Share.share({
+    title: name,
+    url: file.uri,
+    dialogTitle: "Save or share your Personal OS export",
+  });
+}

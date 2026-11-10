@@ -8,3 +8,12 @@ test-results/
 models/
 
 __pycache__/
+
+dist-native/
+.android-signing/
+android/local.properties
+android/.gradle/
+android/**/build/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json

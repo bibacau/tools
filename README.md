@@ -130,3 +130,37 @@ New account/password-change policy: **8–200 ASCII letters/numbers**, not force
 ### Licensing
 
 This version adds IMG.LY Background Removal under **AGPL-3.0**; the combined application is distributed under AGPL-3.0. See `LICENSE`, `licenses/README.md`, upstream notices and [corresponding source](https://github.com/bibacau/tools). ONNX Runtime and fflate are MIT licensed. No paid API is used. Preserve source availability and notices when distributing or serving modified versions. Proprietary embedding requires appropriate alternative rights or replacing the AGPL dependency.
+
+## Android APK and download website
+
+The signed standalone APK is committed at [`downloads/personal-os.apk`](downloads/personal-os.apk), with hashes/version information in [`downloads/release.json`](downloads/release.json). Download directly from [GitHub](https://github.com/bibacau/tools/raw/refs/heads/main/downloads/personal-os.apk), open on Android 7.0+ and allow installation from that browser/file manager when prompted. It is a direct APK, not a Google Play release.
+
+The APK bundles the application shell and all ordinary tool code locally via Capacitor 8. It uses its own device-local password verifier and IndexedDB data. There is **no server connection or sync** in this standalone edition. The app asks for its local password on a fresh launch/reload; Lock preserves records. Its salted PBKDF2-SHA256 verifier is not a plaintext password, but the app lock does not encrypt the record database. Android cloud backup is disabled. Uninstallation/clear-storage deletes data; use Settings export/restore. Native exports invoke Android's share sheet (Files/other destinations) using private cache files; images and URLs are never automatically uploaded.
+
+Background removal requires the initial optional model/runtime download, WebAssembly support and substantial memory; it has not been exercised on a physical Android device. The optional speech-recognition server is not bundled/configured in the APK, so microphone transcription is unavailable. The transcript editor remains usable. Native browser verification covers account creation, lock/unlock, persistence across reload, zero server API requests and mobile layout; release signing and manifest checks verify the actual APK. No Android emulator or physical-device installation test was performed.
+
+### Rebuild a signed APK
+
+Prerequisites: Node 22.12+, JDK 21 with compiler, Android SDK platform 36, build-tools 36.0.0 and platform-tools. `android/gradle/wrapper/gradle-wrapper.properties` pins Gradle and its official SHA-256. First-time builds need npm/Google Maven/Maven Central/Gradle repositories and SDK downloads. Keep package-signature/TLS/checksum verification enabled.
+
+```sh
+npm ci
+export ANDROID_HOME=/path/to/android-sdk
+export JAVA_HOME=/path/to/jdk-21
+npm run android:sync
+# Set these from your private signing key/secure environment, never commit them:
+export APP_RELEASE_STORE_FILE=/absolute/path/to/release.keystore
+export APP_RELEASE_STORE_PASSWORD='your-private-keystore-password'
+npm run android:apk
+node scripts/package-apk.mjs
+```
+
+The alias is `personal-os`. The first release was signed with a generated private key held in the ignored `.android-signing/` directory of the build workspace. **Back up that directory securely** if you own/manage this build environment. It is never uploaded to GitHub, included in the APK, or exposed on the download website. Future updates must retain that key, application ID and an increased versionCode to update existing installations without uninstalling. Losing the private key requires a separately signed installation and a manual data backup/restore. Do not publish private signing keys or passwords.
+
+APK source: `capacitor.config.ts`, `android/`, `src/platform.ts`; builds use `VITE_NATIVE=true` and `dist-native/`. Web builds remain server-backed and use `dist/`; they are not switched into standalone mode. `npm run build:android:web` prepares bundled assets, `npm run android:sync` syncs plugins/assets, and `npm run android:apk` assembles the signed release when signing variables are set. `node tests/native-browser.mjs` validates the built native web assets in a mobile Chromium viewport.
+
+### Download website
+
+The static website in `site/` uses local artwork/fonts, responsive layouts, installation instructions, limitations, source/license links and the release checksum. The existing Express app serves it publicly at `/download/` on port **8002**, with the actual APK at `/download/personal-os.apk`; Docker copies both `site/` and `downloads/`.
+
+`.github/workflows/download-site.yml` copies the APK/metadata into the static deployment and publishes to GitHub Pages on changes to the website/APK. It attempts to enable Pages using the repository's workflow token. The intended public address is `https://bibacau.github.io/tools/`. If repository settings prevent that workflow from enabling Pages, the owner must select **Settings → Pages → Source: GitHub Actions**, then re-run “Publish Android download website” under Actions. A configured workflow or pushed source alone does not establish that the site is publicly live; use the deployment result.

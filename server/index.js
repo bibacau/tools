@@ -207,6 +207,17 @@ const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../dist",
 );
+app.get(/^\/download$/, (req, res) => res.redirect("/download/"));
+app.get("/download/personal-os.apk", (req, res) =>
+  res.download(
+    path.resolve(root, "../downloads/personal-os.apk"),
+    "personal-os.apk",
+  ),
+);
+app.get("/download/release.json", (req, res) =>
+  res.sendFile(path.resolve(root, "../downloads/release.json")),
+);
+app.use("/download", express.static(path.resolve(root, "../site")));
 app.use(express.static(root));
 app.get("/{*path}", (req, res) => res.sendFile(path.join(root, "index.html")));
 app.use((e, req, res, _next) => {

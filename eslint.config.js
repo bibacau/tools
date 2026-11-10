@@ -5,6 +5,10 @@ export default ts.config(
   {
     ignores: [
       "dist/**",
+      "dist-native/**",
+      "android/**/build/**",
+      "android/app/src/main/assets/**",
+      "android/capacitor-cordova-android-plugins/**",
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",

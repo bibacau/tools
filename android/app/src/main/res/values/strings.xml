@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Personal OS</string>
+    <string name="title_activity_main">Personal OS</string>
+    <string name="package_name">com.bibacau.personalos</string>
+    <string name="custom_url_scheme">com.bibacau.personalos</string>
+</resources>

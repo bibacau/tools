@@ -6,3 +6,7 @@ data
 models
 test-results
 playwright-report
+
+.android-signing
+android
+dist-native

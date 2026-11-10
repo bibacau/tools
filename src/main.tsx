@@ -1,3 +1,4 @@
+import { appFetch, nativeApp } from "./platform";
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -47,7 +48,7 @@ function App() {
   useEffect(() => {
     const off = store.subscribe(() => refresh((x) => x + 1));
     store.init().then(() => setReady(true));
-    fetch("/api/auth")
+    appFetch("/api/auth")
       .then((r) => r.json())
       .then((v) => {
         setAuth(v.authenticated);
@@ -86,7 +87,7 @@ function App() {
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") void store.sync();
     }, 60000);
-    if ("serviceWorker" in navigator && import.meta.env.PROD)
+    if ("serviceWorker" in navigator && import.meta.env.PROD && !nativeApp)
       navigator.serviceWorker.register("/sw.js");
     return () => {
       off();
@@ -143,7 +144,7 @@ function App() {
   async function login(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const r = await fetch("/api/auth", {
+      const r = await appFetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
@@ -152,6 +153,7 @@ function App() {
       if (!r.ok) throw Error(v.error);
       localStorage.setItem("authorized", "yes");
       setAuth(true);
+      setSetup(false);
       setPassword("");
       void store.sync();
     } catch (e) {
@@ -481,10 +483,12 @@ function App() {
               Personal workspace<small>Your own little corner</small>
             </span>
             <button
-              aria-label="Log out and clear device"
+              aria-label={nativeApp ? "Lock app" : "Log out and clear device"}
               onClick={async () => {
-                await fetch("/api/logout", { method: "POST" }).catch(() => {});
-                await store.clearLocal();
+                await appFetch("/api/logout", { method: "POST" }).catch(
+                  () => {},
+                );
+                if (!nativeApp) await store.clearLocal();
                 setAuth(false);
               }}
             >
@@ -818,7 +822,7 @@ function App() {
                       const form = e.currentTarget;
                       const fields = new FormData(form);
                       try {
-                        const response = await fetch("/api/password", {
+                        const response = await appFetch("/api/password", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
@@ -861,6 +865,14 @@ function App() {
                   </form>
                   <hr />
                   <h2>Privacy & offline storage</h2>
+                  {nativeApp && (
+                    <p className="subtle">
+                      Standalone Android app. Records are saved on this device;
+                      no server sync. Locking preserves records. Uninstalling or
+                      clearing app data deletes them, so export backups first.
+                      This app lock does not encrypt stored records.
+                    </p>
+                  )}
                   <label className="check">
                     <input
                       type="checkbox"

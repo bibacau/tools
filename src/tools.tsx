@@ -1,3 +1,4 @@
+import { appFetch, nativeApp } from "./platform";
 import DOMPurify from "dompurify";
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import {
@@ -1374,7 +1375,7 @@ function Speech() {
   const recorder = useRef<MediaRecorder | null>(null),
     stream = useRef<MediaStream | null>(null);
   useEffect(() => {
-    fetch("/api/speech")
+    appFetch("/api/speech")
       .then((r) => r.json())
       .then((v) => setAvailable(v.available))
       .catch(() => {});
@@ -1421,7 +1422,7 @@ function Speech() {
             new Blob(chunks, { type: r.mimeType }),
             "recording.webm",
           );
-          const response = await fetch("/api/speech", {
+          const response = await appFetch("/api/speech", {
             method: "POST",
             body: form,
           });
@@ -1448,7 +1449,11 @@ function Speech() {
     <div className="panel">
       <div className="section-heading">
         <h2>A place for your spoken thoughts.</h2>
-        <span className="badge">Local server recognition</span>
+        <span className="badge">
+          {nativeApp
+            ? "Transcription editor · server unavailable"
+            : "Local server recognition"}
+        </span>
       </div>
       <p className="subtle">
         Uses an optional Vosk service with an installed model. No cloud speech

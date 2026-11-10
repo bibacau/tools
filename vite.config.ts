@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+const nativeBuild = process.env.VITE_NATIVE === "true";
 export default defineConfig({
   worker: {
     format: "es",
@@ -15,6 +16,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      disable: nativeBuild,
       registerType: "prompt",
       includeAssets: ["icon.svg", "icon-192.png", "icon-512.png"],
       manifest: {
@@ -61,7 +63,7 @@ export default defineConfig({
         ],
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/download(?:\/|$)/],
         maximumFileSizeToCacheInBytes: 5000000,
       },
     }),
@@ -73,5 +75,8 @@ export default defineConfig({
     },
     proxy: { "/api": "http://127.0.0.1:8003" },
   },
-  build: { chunkSizeWarningLimit: 1100 },
+  build: {
+    outDir: nativeBuild ? "dist-native" : "dist",
+    chunkSizeWarningLimit: 1100,
+  },
 });

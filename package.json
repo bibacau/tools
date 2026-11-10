@@ -11,9 +11,16 @@
     "test": "vitest run",
     "lint": "eslint .",
     "test:e2e": "playwright test",
-    "db:migrate": "node --env-file-if-exists=.env server/migrate.js"
+    "db:migrate": "node --env-file-if-exists=.env server/migrate.js",
+    "build:android:web": "VITE_NATIVE=true tsc --noEmit && VITE_NATIVE=true vite build",
+    "android:sync": "npm run build:android:web && cap sync android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew --no-daemon --max-workers=2 assembleRelease"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3",
     "@imgly/background-removal": "^1.7.0",
     "@prisma/adapter-better-sqlite3": "^6.19.0",
     "@prisma/client": "6.19.0",
@@ -34,6 +41,7 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.10.0",

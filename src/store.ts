@@ -1,3 +1,4 @@
+import { nativeApp } from "./platform";
 import { openDB } from "idb";
 export type Item = {
   id: string;
@@ -65,6 +66,11 @@ export async function clearLocal() {
   notify();
 }
 export async function sync() {
+  if (nativeApp) {
+    syncState = "Saved on this device · standalone APK";
+    notify();
+    return;
+  }
   if (syncing) return;
   syncing = true;
   try {
