@@ -15,7 +15,10 @@ type Active = {
 };
 export default function Whiteboard() {
   const rows = store.list("whiteboard"),
-    [id, setId] = useState(rows[0]?.id || ""),
+    [id, setId] = useState(() => {
+      const last = localStorage.getItem("personal-os-last-whiteboard");
+      return rows.find((r) => r.id === last)?.id || rows[0]?.id || "";
+    }),
     [name, setName] = useState(""),
     [tool, setTool] = useState("select"),
     [color, setColor] = useState("#8270f9"),
@@ -32,6 +35,9 @@ export default function Whiteboard() {
     [selection, setSelection] = useState<any>(null),
     [historyIndex, setHistoryIndex] = useState(0),
     [historyLength, setHistoryLength] = useState(1);
+  useEffect(() => {
+    if (id) localStorage.setItem("personal-os-last-whiteboard", id);
+  }, [id]);
   const finishPolygonRef = useRef<() => void>(() => {});
   const host = useRef<HTMLDivElement>(null),
     canvas = useRef<f.Canvas | null>(null),

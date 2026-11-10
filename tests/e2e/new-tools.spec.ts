@@ -73,13 +73,11 @@ test("whiteboard edits, transformations, grouping, undo, exports and offline rel
     await readFile((await (await event).path())!, "utf8"),
   );
   expect(backup.content.canvas.objects).toHaveLength(2);
-  await page
-    .getByLabel("Import project", { exact: true })
-    .setInputFiles({
-      name: "roundtrip.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(backup)),
-    });
+  await page.getByLabel("Import project", { exact: true }).setInputFiles({
+    name: "roundtrip.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup)),
+  });
   await expect(page.getByText(/2 objects ·/)).toBeVisible();
   await page.screenshot({
     path: "/tmp/personal-os-whiteboard.png",
@@ -207,6 +205,13 @@ test("two browsers race over the self-hosted WebSocket server without sharing pr
   page,
   browser,
 }) => {
+  // Plain HTTP LAN clients do not expose crypto.randomUUID.
+  await page.addInitScript(() =>
+    Object.defineProperty(crypto, "randomUUID", {
+      value: undefined,
+      configurable: true,
+    }),
+  );
   await login(page);
   await page.goto("/wpm");
   await page.getByRole("button", { name: "Typing race", exact: true }).click();

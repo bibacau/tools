@@ -9,7 +9,7 @@ import {
   extension,
   type Format,
 } from "./image-utils";
-import { download } from "./utils";
+import { download, uid } from "./utils";
 import * as store from "./store";
 type Row = {
   id: string;
@@ -72,7 +72,7 @@ export default function ImageTools({ mode }: { mode: string }) {
       return;
     }
     for (const file of Array.from(files)) {
-      const id = crypto.randomUUID();
+      const id = uid();
       try {
         const image = await decodeImage(file),
           width = image.width,

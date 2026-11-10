@@ -19,7 +19,23 @@ export function download(
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 export const copy = (text: string) => navigator.clipboard.writeText(text);
-export const uid = () => crypto.randomUUID();
+export function uid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  // getRandomValues is also available on plain-HTTP LAN origins.
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes, (n) => n.toString(16).padStart(2, "0")).join(
+    "",
+  );
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20),
+  ].join("-");
+}
 export function weightedIndex(weights: number[], random = Math.random()) {
   const total = weights.reduce((a, b) => a + Math.max(0, b), 0);
   if (!total) throw Error("Add a positive weight");

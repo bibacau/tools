@@ -1,3 +1,4 @@
+import { uid } from "./utils";
 import { nativeApp } from "./platform";
 import { openDB } from "idb";
 export type Item = {
@@ -40,7 +41,7 @@ export async function put(id: string, data: Record<string, any>) {
     rev: old?.rev || 0,
     data: { ...data, updated: Date.now() },
     dirty: true,
-    version: crypto.randomUUID(),
+    version: uid(),
   };
   items = [...items.filter((r) => r.id !== id), row];
   notify();
@@ -54,7 +55,7 @@ export async function put(id: string, data: Record<string, any>) {
   void sync();
 }
 export const create = (type: string, data: Record<string, any>) => {
-  const id = crypto.randomUUID();
+  const id = uid();
   void put(id, { ...data, type });
   return id;
 };
@@ -94,9 +95,9 @@ export async function sync() {
         if (!conflict) throw Error("Sync conflict; retry");
         const copy = {
           ...local,
-          id: crypto.randomUUID(),
+          id: uid(),
           rev: 0,
-          version: crypto.randomUUID(),
+          version: uid(),
           data: {
             ...local.data,
             title:
@@ -115,7 +116,7 @@ export async function sync() {
           const replacement = {
             ...conflict,
             dirty: false,
-            version: crypto.randomUUID(),
+            version: uid(),
           };
           items = items.map((x) => (x.id === local.id ? replacement : x));
           await (await db).put("records", replacement);
@@ -141,7 +142,7 @@ export async function sync() {
         const row = {
           ...remoteRow,
           dirty: false,
-          version: crypto.randomUUID(),
+          version: uid(),
         };
         items = [...items.filter((x) => x.id !== row.id), row];
         await (await db).put("records", row);
@@ -180,9 +181,7 @@ export async function restore(text: string) {
   }
   for (const r of v.records)
     await put(
-      r.id === "preferences" && !get("preferences")
-        ? "preferences"
-        : crypto.randomUUID(),
+      r.id === "preferences" && !get("preferences") ? "preferences" : uid(),
       { ...r.data, importedFrom: r.id },
     );
 }

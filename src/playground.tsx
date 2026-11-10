@@ -7,7 +7,7 @@ import { javascript } from "@codemirror/lang-javascript";
 import * as store from "./store";
 import { saveDocument } from "./documents";
 import { templates, standaloneHTML } from "./playground-core";
-import { download } from "./utils";
+import { download, uid } from "./utils";
 type Project = {
   type: string;
   name: string;
@@ -17,7 +17,10 @@ type Project = {
 };
 export default function Playground() {
   const rows = store.list("playground"),
-    [selected, setSelected] = useState(rows[0]?.id || ""),
+    [selected, setSelected] = useState(() => {
+      const last = localStorage.getItem("personal-os-last-playground");
+      return rows.find((r) => r.id === last)?.id || rows[0]?.id || "";
+    }),
     [draft, setDraft] = useState<Project>({
       type: "playground",
       name: "Untitled project",
@@ -39,7 +42,7 @@ export default function Playground() {
     draftRef = useRef(draft),
     dirty = useRef(false),
     idRef = useRef(selected),
-    token = useRef(crypto.randomUUID());
+    token = useRef(uid());
   const readyRef = useRef(false);
   useEffect(() => {
     readyRef.current = false;
@@ -49,10 +52,13 @@ export default function Playground() {
     }, 1200);
     return () => clearTimeout(timer);
   }, [preview, offlinePreview]);
-  const currentToken = useMemo(() => crypto.randomUUID(), [preview]);
+  const currentToken = useMemo(() => uid(), [preview]);
   token.current = currentToken;
   draftRef.current = draft;
   idRef.current = selected;
+  useEffect(() => {
+    if (selected) localStorage.setItem("personal-os-last-playground", selected);
+  }, [selected]);
   const persist = () => {
     if (!dirty.current || !idRef.current) return;
     const result = saveDocument(
